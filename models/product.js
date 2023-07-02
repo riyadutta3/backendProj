@@ -1,25 +1,9 @@
-const fs = require('fs');
+const db = require('../util/database');
+
+
 const path = require('path');
+const Cart = require('./cart');
 
-const parent = path.dirname(path.basename(__dirname));
-
-const p = path.join(
-  parent,
-  'data',
-  'products.json'
-);
-
-
-
-const getProductsFromFile = cb => {
-  fs.readFile(p, (err, fileContent) => {
-    if (err) {
-     cb([]);
-    } else {
-      cb(JSON.parse(fileContent));
-    }
-  });
-};
 
 module.exports = class Product {
   constructor(id, title, imageUrl, description, price) {
@@ -31,44 +15,20 @@ module.exports = class Product {
   }
 
   save() {
-    getProductsFromFile(products => {
-      if(this.id){
-        const existingProductIndex = products.findIndex(prod => prod.id === this.id);
-        const updatedProduct = [...products];
-        updatedProduct[existingProductIndex]=this;
-        fs.writeFile(p, JSON.stringify(updatedProduct), err => {
-          console.log(err);
-        });
-      }
-      else{
-        this.id = Math.random().toString();
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
-      } 
-    });
+    return db.execute(
+    'insert into products (title, price, imageUrl, description) values (?, ?, ?, ?)',
+    [this .title, this.price, this.imageUrl, this.description]);
   }
 
-  static deleteById(){
-    getProductsFromFile(products => {
-      const updatedProducts = products.filter(prod => prod.id !== id);
-      fs.writeFile(p, JSON.stringify(updatedProducts), err => {
-        if(!err){
-          
-        }
-      })
-    });
+  static deleteById(id){
+    
   }
 
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
+  static fetchAll() {
+    return db.query('select * from products');
   }
 
-  static findById(id,cb){
-    getProductsFromFile(products => {
-      const product = products.find(p => p.id === id);
-      cb(product);
-    });
+  static findById(id){
+    return db.execute('select * from products where products.id = ?', [id]);
   }
 };
