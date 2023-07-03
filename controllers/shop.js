@@ -4,10 +4,10 @@ const Cart = require('../models/cart');
 //with this syntax you can add mutiple exports in one file..
 
 exports.getProducts = (req,res,next)=>{
-  Product.fetchAll()
-  .then(([rows])=>{
+  Product.findAll()
+  .then(products => {
     res.render('shop/product-list', {
-      prods: rows,
+      prods: products,
       pageTitle: 'All products',
       path: '/products'
     });
@@ -17,20 +17,30 @@ exports.getProducts = (req,res,next)=>{
 
 exports.getProduct = (req,res,next)=>{
   const prodId = req.params.productId;
-  Product.findById(prodId).then(([product])=>{ //array destructuring
+  Product.findAll({where: {id: prodId}}) //findAll aways give you an array..
+  .then(products => {
     res.render('shop/product-detail',
-    {product: product[0],
-     pageTitle: product.title,
+    {product: products[0],
+     pageTitle: products[0].title,
      path: '/products'
    });
-  }).catch(err => console.log(err));
+  })
+  .catch(err => console.log(err));
+
+  // Product.findById(prodId).then(([product])=>{ //array destructuring
+  //   res.render('shop/product-detail',
+  //   {product: product,
+  //    pageTitle: product.title,
+  //    path: '/products'
+  //  });
+  // }).catch(err => console.log(err));
 }
 
 exports.getIndex = (req,res,next)=>{ //for index page...
-  Product.fetchAll()
-  .then(([rows])=>{
+  Product.findAll()
+  .then(products => {
     res.render('shop/index', {
-      prods: rows,
+      prods: products,
       pageTitle: 'Shop',
       path: '/'
     });
@@ -38,39 +48,70 @@ exports.getIndex = (req,res,next)=>{ //for index page...
   .catch(err => console.log(err));
 };
 
-// exports.getCart = (req, res, next) =>{
-//   Cart.getCart(cart => {
-//     Product.fetchAll(products => {
-//       const cartProducts = [];
-//       for (let product of products) {
-//         const cartProductData = cart.products.find(prod => prod.id === product.id);
-//         if(cartProductData){
-//           cartProducts.push({productData:product , qty: cartProductData.qty});
-//         }
-//       }
-//       res.render('shop/cart', {
-//         pageTitle: 'Your Cart',
-//         path: '/cart',
-//         products: cartProducts
-//       });
-//     })
-//   });
-// };
+exports.getCart = (req, res, next) =>{
+  req.user.getCart()
+  .then(cart => {
+    return cart.getProducts() //added by sequelize
+    .then(products => {
+      res.render('shop/cart', {
+              pageTitle: 'Your Cart',
+              path: '/cart',
+              products: products
+            });
+    })
+    .catch(err => console.log(err));
+  })
+  .catch(err => console.log(err));
+};
 
 exports.postCart = (req,res,next) =>{
     const prodId = req.body.productId;
-    Product.findById(prodId, (product)=>{
-      Cart.addProduct(prodId, product.price);
-    });
-    res.redirect('/cart');
+    let newQuantity = 1;
+    let fetchedCart;
+    req.user
+    .getCart()
+    .then(cart => {
+      fetchedCart = cart;
+      return cart.getProducts({ where : {id : prodId}});
+    })
+    .then(products => {
+      let product;
+      if(products.length > 0){
+        product = products[0];
+      }
+      if(product){
+        const oldQuantity = product.cartItem.quantity; //sequelize provides us facility to access the in between table
+        newQuantity = oldQuantity+1;
+        return product;
+      }
+      return Product.findByPk(prodId)
+      })
+    .then(product => {
+      return fetchedCart.addProduct(product, {
+        through : {quantity : newQuantity}
+      });
+    })
+    .then(() => {
+      res.redirect('/cart');
+    })
+    .catch(err => console.log(err));
 };
 
 exports.postCartDeleteProduct = (req, res, next)=>{
   const prodId = req.body.productId;
-  Product.findById(prodId, product =>{
-    Cart.deleteProduct(prodId, product.price);
+  req.user
+  .getCart()
+  .then(cart => {
+    return cart.getProducts({where : {id: prodId}});
+  })
+  .then(products => {
+    const product = products[0];
+    return product.cartItem.destroy(); //because i only want to delete items from in between table i.e. cart table and to the product table
+  })
+  .then(result => {
     res.redirect('/cart');
-  });
+  })
+  .catch(err => console.log(err));
 };
 
 exports.getOrders = (req,res,next)=>{ 
