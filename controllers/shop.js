@@ -1,9 +1,8 @@
 const Product = require('../models/product');
-
 //with this syntax you can add mutiple exports in one file..
 
 exports.getProducts = (req,res,next)=>{
-  Product.findAll()
+  Product.fetchAll()
   .then(products => {
     res.render('shop/product-list', {
       prods: products,
@@ -16,27 +15,27 @@ exports.getProducts = (req,res,next)=>{
 
 exports.getProduct = (req,res,next)=>{
   const prodId = req.params.productId;
-  Product.findAll({where: {id: prodId}}) //findAll aways give you an array..
-  .then(products => {
-    res.render('shop/product-detail',
-    {product: products[0],
-     pageTitle: products[0].title,
-     path: '/products'
-   });
-  })
-  .catch(err => console.log(err));
-
-  // Product.findById(prodId).then(([product])=>{ //array destructuring
+  // Product.findAll({where: {id: prodId}}) //findAll aways give you an array..
+  // .then(products => {
   //   res.render('shop/product-detail',
-  //   {product: product,
-  //    pageTitle: product.title,
+  //   {product: products[0],
+  //    pageTitle: products[0].title,
   //    path: '/products'
   //  });
-  // }).catch(err => console.log(err));
+  // })
+  // .catch(err => console.log(err));
+
+  Product.findById(prodId).then(product =>{ //array destructuring
+    res.render('shop/product-detail',
+    {product: product,
+     pageTitle: product.title,
+     path: '/products'
+   });
+  }).catch(err => console.log(err));
 }
 
 exports.getIndex = (req,res,next)=>{ //for index page...
-  Product.findAll()
+  Product.fetchAll()
   .then(products => {
     res.render('shop/index', {
       prods: products,
