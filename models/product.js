@@ -1,76 +1,106 @@
-const mongodb = require('mongodb');
+const mongoose = require('mongoose');
 
-const getDb = require('../util/database').getDb; //calling getDb function to interact with the database...
+const Schema = mongoose.Schema; //Schema constructor allow us to create new schemas
 
-class Product{
-  constructor(title, price, description, imageUrl, id,userId){
-    this.title=title;
-    this.price=price;
-    this.description=description;
-    this.imageUrl=imageUrl;
-    this._id= id ? new mongodb.ObjectId(id) : null; //to check if the id already exists or not
-    this.userId = userId;
+const productSchema = new Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', //referring to user model
+    required: true
   }
+});
 
-  save(){
-    const db = getDb(); //getDb simply returns that database instance we connected to..
-    let dbOp;
-    if(this._id){
-      //update product
-      dbOp = db.collection('products').updateOne({_id: this._id }, {$set : this});
-    }
-    else{
-      dbOp = db
-      .collection('products')
-      .insertOne(this) ;
-    }
-    return dbOp
-    .then(result => {
-      console.log(result);
-    })
-    .catch(err => console.log(err)); //this js object will be converted into json by mongodb
-  }
+module.exports = mongoose.model('Product',productSchema); //model func. is important to connect a schema with a name..
 
-  static fetchAll(){
-    const db = getDb();
-    return db
-    .collection('products')
-    .find()
-    .toArray()
-    .then(products => {
-      console.log(products);
-      return products;
-    })
-    .catch(err => console.log(err)); //find returns a cursor, that is a mongodb object which allows us to go through our documents step by step..
-  }
+// const mongodb = require('mongodb');
 
-  static findById(prodId)
-  {
-    const ID = prodId.trim();
-    console.log(ID);
-    const db = getDb();
-    return db.collection('products')
-    .find({_id :new mongodb.ObjectId(ID)}) //mongodb stores id as _id
-    .next() //to get the next document returned by find..
-    .then(product => {
-      console.log(product);
-      return product;
-    })
-    .catch(err => console.log(err)); 
-  }
+// const getDb = require('../util/database').getDb; //calling getDb function to interact with the database...
 
-  static deleteById(prodId){
-    const db = getDb(); //getting connection to the database..
-    return db
-    .collection('products')
-    .deleteOne({_id : new mongodb.ObjectId(prodId)})
-    .then(result => {
-      console.log('Deleted');
-    })
-    .catch(err => console.log(err)); //specifying a filter inside deleteOne..
-  }
+// class Product{
+//   constructor(title, price, description, imageUrl, id,userId){
+//     this.title=title;
+//     this.price=price;
+//     this.description=description;
+//     this.imageUrl=imageUrl;
+//     this._id= id ? new mongodb.ObjectId(id) : null; //to check if the id already exists or not
+//     this.userId = userId;
+//   }
 
-}
+//   save(){
+//     const db = getDb(); //getDb simply returns that database instance we connected to..
+//     let dbOp;
+//     if(this._id){
+//       //update product
+//       dbOp = db.collection('products').updateOne({_id: this._id }, {$set : this});
+//     }
+//     else{
+//       dbOp = db
+//       .collection('products')
+//       .insertOne(this) ;
+//     }
+//     return dbOp
+//     .then(result => {
+//       console.log(result);
+//     })
+//     .catch(err => console.log(err)); //this js object will be converted into json by mongodb
+//   }
+
+//   static fetchAll(){
+//     const db = getDb();
+//     return db
+//     .collection('products')
+//     .find()
+//     .toArray()
+//     .then(products => {
+//       console.log(products);
+//       return products;
+//     })
+//     .catch(err => console.log(err)); //find returns a cursor, that is a mongodb object which allows us to go through our documents step by step..
+//   }
+
+//   static findById(prodId)
+//   {
+//     const ID = prodId.trim();
+//     console.log(ID);
+//     const db = getDb();
+//     return db.collection('products')
+//     .find({_id :new mongodb.ObjectId(ID)}) //mongodb stores id as _id
+//     .next() //to get the next document returned by find..
+//     .then(product => {
+//       console.log(product);
+//       return product;
+//     })
+//     .catch(err => console.log(err)); 
+//   }
+
+//   static deleteById(prodId){
+//     const db = getDb(); //getting connection to the database..
+//     return db
+//     .collection('products')
+//     .deleteOne({_id : new mongodb.ObjectId(prodId)})
+//     .then(result => {
+//       console.log('Deleted');
+//     })
+//     .catch(err => console.log(err)); //specifying a filter inside deleteOne..
+//   }
+
+// }
 
 
-module.exports = Product;
+// module.exports = Product;

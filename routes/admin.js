@@ -12,7 +12,7 @@ const adminController = require('../controllers/admin');
 router.get('/add-product',adminController.getAddProduct); //we are just passing the ref to the function, so don't write () after function name..
 router.get('/products',adminController.getProducts);
 
-// /admin/add-product =>POST
+// // /admin/add-product =>POST
 router.post('/add-product',adminController.postAddProduct);
 router.get('/edit-product/:productId',adminController.getEditProduct);
 router.post('/edit-product',adminController.postEditProduct);
