@@ -6,6 +6,7 @@ exports.getAddProduct = (req,res,next)=>{
           pageTitle: 'Add Product',
           path: '/admin/add-product',
           editing: false,
+          isAuthenticated: req.session.isLoggedIn
         });     
 };
 
@@ -19,7 +20,7 @@ exports.postAddProduct = (req,res,next)=>{
       price:price, 
       description:description, 
       imageUrl:imageUrl,
-      userId: req.user._id
+      userId: req.user
     }) //mapping
     product.save() //before in mongodb this save method was defined by us, but here in mongoose it is already defined..
     .then(result => {
@@ -45,7 +46,8 @@ exports.getEditProduct = (req,res,next)=>{
           pageTitle: 'Edit Product',
           path: '/admin/edit-product',
           editing : editMode,
-          product: product
+          product: product,
+          isAuthenticated: req.session.isLoggedIn
         }); })
         .catch(err => console.log(err));        
 };
@@ -81,7 +83,8 @@ exports.getProducts = (req,res,next)=>{
     res.render('admin/products', {
     prods: products,
     pageTitle: 'Admin Products',
-    path: '/admin/products'
+    path: '/admin/products',
+    isAuthenticated: req.session.isLoggedIn
   });
   })
   .catch(err => console.log(err));
