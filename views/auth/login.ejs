@@ -6,6 +6,9 @@
     <%- include('../includes/navigation.ejs') %>
     <!-- for post, we automatically gets a req which puts all the data into it's body..  -->
     <main>
+    <% if(errorMessage) { %>
+    <div class="user-message user-message--error"><%= errorMessage %></div>
+    <% } %>
        <form class="login-form" action="/login" method="post">
         <div class="form-control">
             <label for="email">E-mail</label>
@@ -15,7 +18,11 @@
             <label for="password">Password</label>
             <input type="password" name="password" id="password" >
         </div>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn" type="submit">Login</button>
        </form>
+       <div>
+            <a href="reset">Reset Password</a>
+        </div>
     </main>
 <%- include('../includes/end.ejs') %>
