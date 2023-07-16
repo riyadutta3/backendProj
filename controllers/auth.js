@@ -5,6 +5,8 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const {validationResult} = require('express-validator'); //as the check provides you with so many things, you are simply fetching whatever you want..
+
 const User = require('../models/user');
 
 const transporter = nodemailer.createTransport({
@@ -28,7 +30,12 @@ exports.getLogin = (req, res, next) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
-    errorMessage : message
+    errorMessage : message,
+    oldInput: {
+      email: '',
+      password: ''
+    },
+    validationErrors: []
   });
 };
 
@@ -44,7 +51,13 @@ exports.getSignup = (req, res, next) => {
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
-    errorMessage : message
+    errorMessage : message,
+    oldInput: {
+      email: '',
+      password: '',
+      confirmPassword: ''
+    },
+    validationErrors: []
   });
 };
 
@@ -52,12 +65,36 @@ exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    console.log(errors.array());
+    return res.status(422).render('auth/login', {
+    path: '/login',
+    pageTitle: 'login',
+    errorMessage : errors.array()[0].msg,
+    oldInput: { 
+       email: email,
+       password: password
+      },
+      validationErrors: errors.array() 
+  });
+}
+
   User.findOne({email: email})
     .then(user => {
       if(!user){
-        req.flash('error','Invalid email or password');
-        return res.redirect('/login');
-      }
+        console.log(errors.array());
+        return res.status(422).render('auth/signup', {
+          path: '/signup',
+          pageTitle: 'Signup',
+          errorMessage : errors.array()[0].msg,
+          oldInput: { 
+             email: email,
+             password: password
+            },
+            validationErrors: errors.array()
+      })
+    }
 
       bcrypt.compare(password, user.password) //here we are comparing the password user has passed with the password stored in database
       .then(result => {  //we'll go to the catch only when something gets wrong, if passwd matches/unmatches we will end up in then block only..
@@ -70,8 +107,16 @@ exports.postLogin = (req, res, next) => {
           res.redirect('/');
           });
         }
-        req.flash('error','Invalid email or password');
-        res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          errorMessage : errors.array()[0].msg,
+          oldInput: { 
+             email: email,
+             password: password
+            },
+          validationErrors: errors.array()[0].msg
+      })
       })
       .catch(err => console.log(err));;
     })
@@ -81,16 +126,26 @@ exports.postLogin = (req, res, next) => {
 exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
+  const confirmPassword = req.body.confirmPassword ;
+  
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+    // console.log(errors.array())
+    return res.status(422).render('auth/signup', {
+      path: '/signup',
+      pageTitle: 'Signup',
+      errorMessage : errors.array()[0].msg,
+      oldInput: { 
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword 
+       },
+      validationErrors: errors.array()
+    });
+  }
 
-  User.findOne({email: email})
-  .then(userDoc => {
-    if(userDoc){
-      req.flash('error','E-Mail exists already!');
-      return res.redirect('/signup');
-    }
-
-    return bcrypt.hash(password, 12)
+    bcrypt
+    .hash(password, 12)
     .then(hashedPassword => {
       const user = new User({
         email: email,
@@ -111,8 +166,6 @@ exports.postSignup = (req, res, next) => {
     .catch(err => {
       console.log(err);
     }); //first arg is the string you want to hash, second value is the salt value..
-  })
-  .catch(err => console.log(err));
 };
 
 exports.postLogout = (req, res, next) => {
