@@ -1,17 +1,37 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
+
+const ITEMS_PER_PAGE = 1;
 //with this syntax you can add mutiple exports in one file..
 
 exports.getProducts = (req,res,next)=>{
-  Product.find() //find doesn't give the cursor, it simply gives all the products..
+  const page = +req.query.page || 1;
+  let totalItems;
+
+  Product.find().countDocuments().then(numProducts => {
+    totalItems = numProducts;
+    return Product.find()
+    .skip((page - 1) * ITEMS_PER_PAGE)
+    .limit(ITEMS_PER_PAGE);
+  })
   .then(products => {
     res.render('shop/product-list', {
       prods: products,
-      pageTitle: 'All products',
-      path: '/products'
+      pageTitle: 'Products',
+      path: '/products',
+      currentPage: page,
+      hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+      hasPrevPage: page>1,
+      nextPage: page+1,
+      previousPage: page-1,
+      lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
     });
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 }
 
 exports.getProduct = (req,res,next)=>{
@@ -23,20 +43,41 @@ exports.getProduct = (req,res,next)=>{
      pageTitle: product.title,
      path: '/products'
    });
-  }).catch(err => console.log(err));
+  }).catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 }
 
 exports.getIndex = (req,res,next)=>{ //for index page...
-  Product.find()
+  const page = +req.query.page || 1;
+  let totalItems;
+
+  Product.find().countDocuments().then(numProducts => {
+    totalItems = numProducts;
+    return Product.find()
+    .skip((page - 1) * ITEMS_PER_PAGE)
+    .limit(ITEMS_PER_PAGE);
+  })
   .then(products => {
     res.render('shop/index', {
       prods: products,
       pageTitle: 'Shop',
       path: '/',
-      csrfToken: req.csrfToken()
+      currentPage: page,
+      hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+      hasPrevPage: page>1,
+      nextPage: page+1,
+      previousPage: page-1,
+      lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
     });
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 };
 
 exports.getCart = (req, res, next) =>{
@@ -51,7 +92,11 @@ exports.getCart = (req, res, next) =>{
               products: products
             });
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 };
 
 exports.postCart = (req,res,next) =>{
@@ -73,7 +118,11 @@ exports.postCartDeleteProduct = (req, res, next)=>{
   .then(result => {
     res.redirect('/cart');
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 };
 
 exports.postOrder = (req, res, next) => {
@@ -98,7 +147,11 @@ exports.postOrder = (req, res, next) => {
   .then(result => {
     res.redirect('/orders');
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 }
 
 exports.getOrders = (req,res,next)=>{ 
@@ -110,7 +163,11 @@ exports.getOrders = (req,res,next)=>{
       orders: orders
     });
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  });
 }
 
 exports.getCheckout = (req,res,next)=>{

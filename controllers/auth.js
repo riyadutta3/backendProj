@@ -164,7 +164,9 @@ exports.postSignup = (req, res, next) => {
       })
     })
     .catch(err => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     }); //first arg is the string you want to hash, second value is the salt value..
 };
 
@@ -219,7 +221,11 @@ exports.postReset = (req,res,next) => {
         <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>`
       })
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
   })
 };
 
@@ -243,7 +249,11 @@ exports.getNewPassword = (req,res,next) => {
     passwordToken: token //so that user don't enter random token in the url and by any chance reach the new password page..
   });
   })
-  .catch(err => console.log(err)); //gt stands for greater than, if token hasn't expired yet, we can reset the password.. 
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }); //gt stands for greater than, if token hasn't expired yet, we can reset the password.. 
 }
 
 exports.postNewPassword = (req,res,next) => {
@@ -266,5 +276,9 @@ exports.postNewPassword = (req,res,next) => {
   .then(result => {
     res.redirect('/login');
   })
-  .catch(err => console.log(err));
-}
+  .catch(err => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  })
+};

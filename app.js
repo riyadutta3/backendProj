@@ -24,6 +24,7 @@ const store = new MongoDBStore({
 
 const csrfProtection = csrf();
 
+
 app.set('view engine','ejs'); 
 app.set('views','views');
 
@@ -33,6 +34,7 @@ const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({extended: false})); 
 app.use(express.static(path.join(__dirname,'public')));
+
 app.use(session({
     secret: 'my secret',
     resave: false,
@@ -50,10 +52,15 @@ app.use((req,res,next) => {
 
     User.findById(req.session.user._id)
     .then(user => {
+        if(!user){
+            return next();
+        }
         req.user = user;
         next();
     })
-    .catch(err => console.log(err)); 
+    .catch(err => {
+        throw new Error(err);
+    }); 
 });
 
 app.use((req,res,next)=>{
@@ -66,7 +73,14 @@ app.use((req,res,next)=>{
 app.use('/admin',adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
+
+app.get('/500',errorController.get500);
+
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+    res.redirect('/500');
+});
 
 
 //mongoose manage connection behind the scene for us..
