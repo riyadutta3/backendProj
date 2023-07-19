@@ -1,3 +1,4 @@
+const stripe = require('stripe')('sk_test_51NVQmASHF2bI8nAsEUu2hgjxaLbUbdDI82aZek6juQ8i4pJ9IqC9AHmLHg74Nbsmsew89vWVliMvdKWUg6wjPlGF00COwCIFVa');
 const Product = require('../models/product');
 const Order = require('../models/order');
 
@@ -84,7 +85,8 @@ exports.getCart = (req, res, next) =>{
   req.user
   .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
   .then(user => {
-    console.log(user.cart.items);
+    console.log('get cart');
+    // console.log(user.cart.items);
       const products = user.cart.items;
       res.render('shop/cart', {
               pageTitle: 'Your Cart',
@@ -93,14 +95,16 @@ exports.getCart = (req, res, next) =>{
             });
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
   });
 };
 
 exports.postCart = (req,res,next) =>{
     const prodId = req.body.productId;
+    console.log('post cart');
     Product.findById(prodId)
     .then(product => {
      return req.user.addToCart(product);
@@ -108,6 +112,12 @@ exports.postCart = (req,res,next) =>{
     .then(result => {
       console.log(result);
       res.redirect('/cart');
+    })
+    .catch(err => {
+      // const error = new Error(err);
+      // error.httpStatusCode = 500;
+      // return next(error);
+      console.log(err);
     });
 };
 
@@ -119,13 +129,65 @@ exports.postCartDeleteProduct = (req, res, next)=>{
     res.redirect('/cart');
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
   });
 };
 
-exports.postOrder = (req, res, next) => {
+exports.getCheckout = (req, res, next) => {
+  let products;
+  let total = 0;
+  // console.log('get checkout');
+  req.user
+  .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
+  .then(user => {
+      products = user.cart.items;
+      total = 0;
+      products.forEach(p => {
+        total += p.quantity * p.productId.price;
+        console.log(p.productId);
+      });
+      return stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ['card'],
+        line_items: products.map(p =>{
+          return {
+            price_data: {
+              product_data: {
+                // product: p.productId._id,
+                name: p.productId.title,
+                description: p.productId.description,
+              },
+              unit_amount: p.productId.price * 100,
+              currency: 'inr',
+            } ,
+            quantity: p.quantity
+          };
+        }),
+        success_url: req.protocol + '://' + req.get('host') + '/checkout/success',
+        cancel_url: req.protocol + '://' + req.get('host') + '/checkout/cancel'
+      });
+  })
+  .then(session=> {
+    res.render('shop/checkout', {
+      pageTitle: 'Checkout',
+      path: '/checkout',
+      products: products,
+      totalSum: total,
+      sessionId: session.id
+    });
+  })
+  .catch(err => {
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
+  });
+}
+
+exports.getCheckoutSuccess = (req, res, next) => {
   req.user
   .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
   .then(user => {
@@ -170,9 +232,9 @@ exports.getOrders = (req,res,next)=>{
   });
 }
 
-exports.getCheckout = (req,res,next)=>{
-  res.render('shop/checkout',{
-    path: '/checkout',
-    pageTitile: 'Checkout'
-  });
-}
+// exports.getCheckout = (req,res,next)=>{
+//   res.render('shop/checkout',{
+//     path: '/checkout',
+//     pageTitile: 'Checkout'
+//   });
+// }
