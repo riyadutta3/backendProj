@@ -3,11 +3,17 @@
     <button id="side-menu-toggle">Menu</button>
     <nav class="main-header__nav">
         <ul class="main-header__item-list">
-          <li class="main-header__item">
+           <!-- <li class="main-header__item">
             <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
+            </li> -->
+            <li class="main-header__item">
+            <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Books</a>
             </li>
             <li class="main-header__item">
-            <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Products</a>
+                <a class="<%= path === '/fiction' ? 'active' : '' %>" href="/fiction">Fiction</a>
+            </li>
+            <li class="main-header__item">
+                <a class="<%= path === '/nonfiction' ? 'active' : '' %>" href="/nonfiction">Non-Fiction</a>
             </li>
             <% if(isAuthenticated){ %>
                 <li class="main-header__item">
@@ -17,11 +23,11 @@
                     <a class="<%= path === '/orders' ? 'active' : '' %>" href="/orders">Orders</a>
                 </li>
                 <li class="main-header__item">
-                    <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
+                    <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Books
                     </a>
                 </li>
                 <li class="main-header__item">
-                    <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Products
+                    <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Books
                     </a>
                 </li>
             <% } %>

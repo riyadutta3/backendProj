@@ -67,7 +67,6 @@ exports.postLogin = (req, res, next) => {
 
   const errors = validationResult(req);
   if(!errors.isEmpty()){
-    console.log(errors.array());
     return res.status(422).render('auth/login', {
     path: '/login',
     pageTitle: 'login',
@@ -83,11 +82,11 @@ exports.postLogin = (req, res, next) => {
   User.findOne({email: email})
     .then(user => {
       if(!user){
-        console.log(errors.array());
+        // console.log(errors.array());
         return res.status(422).render('auth/signup', {
           path: '/signup',
           pageTitle: 'Signup',
-          errorMessage : errors.array()[0].msg,
+          errorMessage : 'Email id doesn\'t exists, Signup please!',
           oldInput: { 
              email: email,
              password: password
@@ -95,7 +94,7 @@ exports.postLogin = (req, res, next) => {
             validationErrors: errors.array()
       })
     }
-
+    // console.log(errors.array());
       bcrypt.compare(password, user.password) //here we are comparing the password user has passed with the password stored in database
       .then(result => {  //we'll go to the catch only when something gets wrong, if passwd matches/unmatches we will end up in then block only..
         if(result)
@@ -110,12 +109,12 @@ exports.postLogin = (req, res, next) => {
         return res.status(422).render('auth/login', {
           path: '/login',
           pageTitle: 'Login',
-          errorMessage : errors.array()[0].msg,
+          errorMessage : 'Email id or Password doesn\'t match!',
           oldInput: { 
              email: email,
              password: password
             },
-          validationErrors: errors.array()[0].msg
+          validationErrors: errors.array()
       })
       })
       .catch(err => console.log(err));;
