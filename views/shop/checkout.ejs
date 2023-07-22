@@ -6,10 +6,10 @@
     <%- include('../includes/navigation.ejs') %>
     <main>
         <ul class="cart__item-list">
-            <% products.forEach(p => { %>
+            <% books.forEach(b => { %>
                 <li class="cart__item">
-                    <h1><%= p.productId.title %></h1>
-                    <h2>Quantity: <%= p.quantity %></h2>
+                    <h1><%= b.bookId.title %></h1>
+                    <h2>Quantity: <%= b.quantity %></h2>
                 </li>
             <% })%>
         </ul>

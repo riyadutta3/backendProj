@@ -1,17 +1,19 @@
 const fileHelper = require('../util/file');
 const { validationResult } = require('express-validator'); //importing validationResult function from express-validator
 
-const Product = require('../models/product');
+const Book = require('../models/book');
 
-exports.getAddProduct = (req,res,next)=>{
+const ITEMS_PER_PAGE = 2;
+
+exports.getAddBook = (req,res,next)=>{
     //res.sendFile(path.join(__dirname,'..','views','add-product.html')); 
         
     if(!req.session.isLoggedIn){
       return res.redirect('/login');
     }
-    res.render('admin/edit-product', {  //object which will hold the data which we will pass into the template..
-          pageTitle: 'Add Product',
-          path: '/admin/add-product',
+    res.render('admin/edit-book', {  //object which will hold the data which we will pass into the template..
+          pageTitle: 'Add Book',
+          path: '/admin/add-book',
           editing: false,
           hasError: false,
           errorMessage: null,
@@ -19,7 +21,7 @@ exports.getAddProduct = (req,res,next)=>{
         });     
 };
 
-exports.postAddProduct = (req,res,next)=>{ 
+exports.postAddBook = (req,res,next)=>{ 
     const title = req.body.title;
     const image = req.file;
     const price = req.body.price;
@@ -29,12 +31,12 @@ exports.postAddProduct = (req,res,next)=>{
     // console.log(errors.array());
 
     if(!image){
-      return res.status(422).render('admin/edit-product', { 
-        pageTitle: 'Add Product',
-        path: '/admin/add-product',
+      return res.status(422).render('admin/edit-book', { 
+        pageTitle: 'Add Book',
+        path: '/admin/add-book',
         editing : false,
         hasError: true,
-        product: {
+        book: {
           title: title,
           price: price,
           genre: genre, 
@@ -48,12 +50,12 @@ exports.postAddProduct = (req,res,next)=>{
     const errors = validationResult(req);
     if(!errors.isEmpty()){
       console.log(errors.array());
-      return res.status(422).render('admin/edit-product', { 
-        pageTitle: 'Add Product',
-        path: '/admin/add-product',
+      return res.status(422).render('admin/edit-book', { 
+        pageTitle: 'Add Book',
+        path: '/admin/add-book',
         editing : false,
         hasError: true,
-        product: {
+        book: {
           title: title,
           price:price, 
           genre: genre,
@@ -66,7 +68,7 @@ exports.postAddProduct = (req,res,next)=>{
 
     const imageUrl = image.path;
 
-    const product = new Product({
+    const book = new Book({
       title: title,
       price:price, 
       description:description, 
@@ -74,10 +76,10 @@ exports.postAddProduct = (req,res,next)=>{
       imageUrl:imageUrl,
       userId: req.user
     }) //mapping
-    product.save() //before in mongodb this save method was defined by us, but here in mongoose it is already defined..
+    book.save() //before in mongodb this save method was defined by us, but here in mongoose it is already defined..
     .then(result => {
-      console.log('CREATED PRODUCT');
-      return res.redirect('/admin/products');
+      console.log('CREATED BOOK');
+      return res.redirect('/admin/books');
     })
     .catch(err => 
       {
@@ -87,24 +89,24 @@ exports.postAddProduct = (req,res,next)=>{
       }); //creates creates a new element based on that model and immediately saves it to the database..
 };
 
-exports.getEditProduct = (req,res,next)=>{
+exports.getEditBook = (req,res,next)=>{
       const editMode = req.query.edit;
       if(!editMode){
         return res.redirect('/');
       }
 
-      const prodId = req.params.productId;
-      Product.findById(prodId)
-      .then(product => {
-        if(!product){
+      const bookId = req.params.bookId;
+      Book.findById(bookId)
+      .then(book => {
+        if(!book){
           return res.redirect('/');
         }
-        res.render('admin/edit-product', { 
-          pageTitle: 'Edit Product',
-          path: '/admin/edit-product',
+        res.render('admin/edit-book', { 
+          pageTitle: 'Edit Book',
+          path: '/admin/edit-book',
           editing : editMode,
           hasError: false,
-          product: product,
+          book: book,
           errorMessage: null,
           validationErrors: []
         }); })
@@ -115,8 +117,8 @@ exports.getEditProduct = (req,res,next)=>{
         });        
 };
 
-exports.postEditProduct = (req,res,next)=>{
-      const prodId = req.body.productId;
+exports.postEditBook = (req,res,next)=>{
+      const bookId = req.body.bookId;
       const updatedTitle = req.body.title;
       const updatedPrice = req.body.price;
       const updatedGenre = req.body.genre;
@@ -126,40 +128,40 @@ exports.postEditProduct = (req,res,next)=>{
       const errors = validationResult(req);
 
     if(!errors.isEmpty()){
-      return res.status(422).render('admin/edit-product', { 
-        pageTitle: 'Add Product',
-        path: '/admin/edit-product',
+      return res.status(422).render('admin/edit-book', { 
+        pageTitle: 'Add Book',
+        path: '/admin/edit-book',
         editing : true,
         hasError: true,
-        product: {
+        book: {
           title: updatedTitle,
           price: updatedPrice, 
           description: updatedDesc, 
           genre: updatedGenre,
-          _id: prodId
+          _id: bookId
         },
         errorMessage: errors.array()[0].msg,
         validationErrors: errors.array()
       });
     }
       
-      Product.findById(prodId)
-      .then(product => {
-        if(product.userId.toString() !== req.user._id.toString())
+      Book.findBybookId()
+      .then(book => {
+        if(book.userId.toString() !== req.user._id.toString())
         {
           res.redirect('/');
         }
-        product.title = updatedTitle;
-        product.price = updatedPrice;
-        product.description = updatedDesc;
-        product.genre = updatedGenre;
+        book.title = updatedTitle;
+        book.price = updatedPrice;
+        book.description = updatedDesc;
+        book.genre = updatedGenre;
         if(image){
-          fileHelper.deleteFile(product.imageUrl);
-          product.imageUrl = image.path;
+          fileHelper.deleteFile(book.imageUrl);
+          book.imageUrl = image.path;
         }
-        return product.save() .then(result => {
-          console.log('UPDATED PRODUCT!!');
-          res.redirect('/admin/products');
+        return book.save() .then(result => {
+          console.log('UPDATED BOOK!!');
+          res.redirect('/admin/books');
         })
       }
       )
@@ -170,42 +172,69 @@ exports.postEditProduct = (req,res,next)=>{
       });
 };
 
-exports.getProducts = (req,res,next)=>{
-  Product.find({userId: req.user._id})//filtering products on admin products page using user id, so the products added by that user will be displayed only and can be edited
-  // .select('title price -_id') //here using select we can select only the required fields from the document, using - sign we can avoid the mentioned field..
-  // .populate('userId','name email') //populate allow us to tell mongoose to populate a certain field with all the detail information..
-  .then(products => {
-    console.log(products);
-    res.render('admin/products', {
-    prods: products,
-    pageTitle: 'Admin Products',
-    path: '/admin/products'
-  });
+exports.getBooks = (req,res,next)=>{
+  const page = +req.query.page || 1;
+  let totalItems;
+  
+  Book.find({userId: req.user._id}).countDocuments().then(numBooks => {
+    totalItems = numBooks;
+    return Book.find({userId: req.user._id})
+    .skip((page - 1) * ITEMS_PER_PAGE)
+    .limit(ITEMS_PER_PAGE);
+  })
+  .then(books => {
+    res.render('admin/books', {
+      books: books,
+      pageTitle: 'Admin Books',
+      path: '/admin/books',
+      currentPage: page,
+      hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+      hasPrevPage: page>1,
+      nextPage: page+1,
+      previousPage: page-1,
+      lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
+    });
   })
   .catch(err => {
     const error = new Error(err);
     error.httpStatusCode = 500;
     return next(error);
   });
+  // Product.find({userId: req.user._id})//filtering products on admin products page using user id, so the products added by that user will be displayed only and can be edited
+  // // .select('title price -_id') //here using select we can select only the required fields from the document, using - sign we can avoid the mentioned field..
+  // // .populate('userId','name email') //populate allow us to tell mongoose to populate a certain field with all the detail information..
+  // .then(products => {
+  //   console.log(products);
+  //   res.render('admin/products', {
+  //   prods: products,
+  //   pageTitle: 'Admin Products',
+  //   path: '/admin/products'
+  // });
+  // })
+  // .catch(err => {
+  //   const error = new Error(err);
+  //   error.httpStatusCode = 500;
+  //   return next(error);
+  // });
 };
 
-exports.deleteProduct = (req,res,next)=>{
-      const prodId = req.params.productId;
+exports.deleteBook = (req,res,next)=>{
+      const bookId = req.params.bookId;
 
-      Product.findById(prodId)
-      .then(product => {
-        if(!product)
+      Book.findById(bookId)
+      .then(book => {
+        if(!book)
         {
-          return next(new Error('Product not found.'));
+          return next(new Error('Book not found.'));
         }
-        fileHelper.deleteFile(product.imageUrl);
-        return Product.deleteOne({_id: prodId, userId: req.user._id}) //this removes the document with given prodId
+        fileHelper.deleteFile(book.imageUrl);
+        return Book.deleteOne({_id: bookId, userId: req.user._id}) //this removes the document with given prodId
       })
       .then(() => {
       console.log('DESTROYED PRODUCT!!');
       res.status(200).json({message: 'Success!'});
       })
       .catch(err => {
-        res.status(500).json({message: 'Deleting product failed.'});
+        res.status(500).json({message: 'Deleting book failed.'});
       });   
 }

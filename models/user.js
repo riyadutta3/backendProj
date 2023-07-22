@@ -15,24 +15,24 @@ const userSchema = new Schema({
       },
       resetTokenExpiration: Date,
       cart: {
-        items: [{productId: {type: Schema.Types.ObjectId, ref: 'Product',required: true},
+        items: [{bookId: {type: Schema.Types.ObjectId, ref: 'Book',required: true},
                  quantity: {type: Number, required: true}}]
       }
 });
 
-userSchema.methods.addToCart = function(product){  //methods key allow you to add your own methods..
-    const cartProductIndex = this.cart.items.findIndex(cp => {  //js will run this function for every item in the array
-                    return cp.productId.toString() === product._id.toString();
+userSchema.methods.addToCart = function(book){  //methods key allow you to add your own methods..
+    const cartBookIndex = this.cart.items.findIndex(cp => {  //js will run this function for every item in the array
+                    return cp.bookId.toString() === book._id.toString();
                 });
         
                 let newQuantity = 1;
                 const updatedCartItems = [...this.cart.items];
                 
-                if(cartProductIndex >= 0){
-                    newQuantity = this.cart.items[cartProductIndex].quantity + 1;
-                    updatedCartItems[cartProductIndex].quantity = newQuantity;
+                if(cartBookIndex >= 0){
+                    newQuantity = this.cart.items[cartBookIndex].quantity + 1;
+                    updatedCartItems[cartBookIndex].quantity = newQuantity;
                 }else{
-                    updatedCartItems.push({productId: product._id,quantity: newQuantity });
+                    updatedCartItems.push({bookId: book._id,quantity: newQuantity });
                 }
                 
                 const updatedCart = {
@@ -43,9 +43,9 @@ userSchema.methods.addToCart = function(product){  //methods key allow you to ad
                 return this.save();
 }
 
-userSchema.methods.removeFromCart = function(productId){
+userSchema.methods.removeFromCart = function(bookId){
     const updatedCartItems = this.cart.items.filter(item =>{
-                    return item.productId.toString() !== productId.toString();
+                    return item.bookId.toString() !== bookId.toString();
         });
 
     this.cart.items = updatedCartItems;

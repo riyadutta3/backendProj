@@ -10,11 +10,11 @@ const isAuth = require('../middleware/is-auth');
 
 
 //here in this file /admin part is not checker just /add-product is checked..
-router.get('/add-product',isAuth, adminController.getAddProduct); //we are just passing the ref to the function, so don't write () after function name..
-router.get('/products',isAuth, adminController.getProducts);
+router.get('/add-book',isAuth, adminController.getAddBook); //we are just passing the ref to the function, so don't write () after function name..
+router.get('/books',isAuth, adminController.getBooks);
 
 // // /admin/add-product =>POST
-router.post('/add-product',[
+router.post('/add-book',[
     body('title')
     .isString()
     .isLength({min : 3})
@@ -26,13 +26,13 @@ router.post('/add-product',[
     .trim()
     ],
     isAuth, 
-    adminController.postAddProduct);
+    adminController.postAddBook);
 
 
-router.get('/edit-product/:productId',isAuth, adminController.getEditProduct);
+router.get('/edit-book/:bookId',isAuth, adminController.getEditBook);
 
 
-router.post('/edit-product',[
+router.post('/edit-book',[
     body('title')
     .isString()
     .isLength({min : 3})
@@ -43,10 +43,10 @@ router.post('/edit-product',[
     body('description')
     .isLength({min : 5, max : 200})
     .trim()
-    ],isAuth, adminController.postEditProduct);
+    ],isAuth, adminController.postEditBook);
 
 
-router.delete('/product/:productId',isAuth, adminController.deleteProduct);
+router.delete('/book/:bookId',isAuth, adminController.deleteBook);
 
 module.exports = router;
 

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema; //Schema constructor allow us to create new schemas
 
-const productSchema = new Schema({
+const bookSchema = new Schema({
   title: {
     type: String,
     required: true
@@ -30,7 +30,7 @@ const productSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Product',productSchema); //model func. is important to connect a schema with a name..
+module.exports = mongoose.model('Book',bookSchema); //model func. is important to connect a schema with a name..
 
 // const mongodb = require('mongodb');
 

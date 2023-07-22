@@ -2,27 +2,28 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const stripe = require('stripe')('sk_test_51NVQmASHF2bI8nAsEUu2hgjxaLbUbdDI82aZek6juQ8i4pJ9IqC9AHmLHg74Nbsmsew89vWVliMvdKWUg6wjPlGF00COwCIFVa');
-const Product = require('../models/product');
+const Book = require('../models/book');
 const Order = require('../models/order');
 
 const ITEMS_PER_PAGE = 2;
 //with this syntax you can add mutiple exports in one file..
 
-exports.getProducts = (req,res,next)=>{
+exports.getBooks = (req,res,next)=>{
   const page = +req.query.page || 1;
   let totalItems;
 
-  Product.find().countDocuments().then(numProducts => {
-    totalItems = numProducts;
-    return Product.find()
+  Book.find().countDocuments().then(numBooks => {
+    totalItems = numBooks;
+    // console.log(totalItems);
+    return Book.find()
     .skip((page - 1) * ITEMS_PER_PAGE)
     .limit(ITEMS_PER_PAGE);
   })
-  .then(products => {
-    res.render('shop/product-list', {
-      prods: products,
-      pageTitle: 'Products',
-      path: '/products',
+  .then(books => {
+    res.render('shop/book-list', {
+      books: books,
+      pageTitle: 'Books',
+      path: '/books',
       currentPage: page,
       hasNextPage: ITEMS_PER_PAGE * page < totalItems,
       hasPrevPage: page>1,
@@ -32,25 +33,25 @@ exports.getProducts = (req,res,next)=>{
     });
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    console.log(err);
   });
 }
 
-exports.getProduct = (req,res,next)=>{
-  const prodId = req.params.productId;
+exports.getBook = (req,res,next)=>{
+  const bookId = req.params.bookId;
+  
   //mongoose has a find by id method.., moreover you can even pass a string to find by id and mongoose will automatically convert it to object id..
-  Product.findById(prodId).then(product =>{ //array destructuring
-    res.render('shop/product-detail',
-    {product: product,
-     pageTitle: product.title,
-     path: '/products'
+  Book.findById(bookId).then(book =>{ //array destructuring
+    res.render('shop/book-detail',
+    {book: book,
+     pageTitle: book.title,
+     path: '/books'
    });
   }).catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
   });
 }
 
@@ -88,17 +89,17 @@ exports.getFiction = (req, res, next) => {
   const page = +req.query.page || 1;
   let totalItems;
 
-  Product.find({genre:'Fiction'}).countDocuments().then(numProducts => {
-    totalItems = numProducts;
-    return Product.find({genre:'Fiction'})
+    Book.find({genre:'Fiction'}).countDocuments().then(numBooks => {
+    totalItems = numBooks;
+    return Book.find({genre:'Fiction'})
     .skip((page - 1) * ITEMS_PER_PAGE)
     .limit(ITEMS_PER_PAGE);
   })
-  .then(products => {
-    res.render('shop/index', {
-      prods: products,
-      pageTitle: 'Shop',
-      path: '/',
+  .then(books => {
+    res.render('shop/book-list', {
+      books: books,
+      pageTitle: 'Fiction',
+      path: '/fiction',
       currentPage: page,
       hasNextPage: ITEMS_PER_PAGE * page < totalItems,
       hasPrevPage: page>1,
@@ -108,9 +109,10 @@ exports.getFiction = (req, res, next) => {
     });
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
   });
 }
 
@@ -118,17 +120,17 @@ exports.getNonFiction = (req, res, next) => {
   const page = +req.query.page || 1;
   let totalItems;
 
-  Product.find({genre:'Non-Fiction'}).countDocuments().then(numProducts => {
-    totalItems = numProducts;
-    return Product.find({genre:'Non-Fiction'})
+  Book.find({genre:'Non-Fiction'}).countDocuments().then(numBooks => {
+    totalItems = numBooks;
+    return Book.find({genre:'Non-Fiction'})
     .skip((page - 1) * ITEMS_PER_PAGE)
     .limit(ITEMS_PER_PAGE);
   })
-  .then(products => {
-    res.render('shop/index', {
-      prods: products,
-      pageTitle: 'Shop',
-      path: '/',
+  .then(books => {
+    res.render('shop/book-list', {
+      books: books,
+      pageTitle: 'Non-Fiction',
+      path: '/nonfiction',
       currentPage: page,
       hasNextPage: ITEMS_PER_PAGE * page < totalItems,
       hasPrevPage: page>1,
@@ -138,23 +140,24 @@ exports.getNonFiction = (req, res, next) => {
     });
   })
   .catch(err => {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
+    // const error = new Error(err);
+    // error.httpStatusCode = 500;
+    // return next(error);
+    console.log(err);
   });
 }
 
 exports.getCart = (req, res, next) =>{
   req.user
-  .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
+  .populate('cart.items.bookId') //we already have items array in cart, here we are populating products with all the info available.. 
   .then(user => {
     console.log('get cart');
     // console.log(user.cart.items);
-      const products = user.cart.items;
+      const books = user.cart.items;
       res.render('shop/cart', {
               pageTitle: 'Your Cart',
               path: '/cart',
-              products: products
+              books: books
             });
   })
   .catch(err => {
@@ -166,11 +169,11 @@ exports.getCart = (req, res, next) =>{
 };
 
 exports.postCart = (req,res,next) =>{
-    const prodId = req.body.productId;
+    const bookId = req.body.bookId;
     console.log('post cart');
-    Product.findById(prodId)
-    .then(product => {
-     return req.user.addToCart(product);
+    Book.findById(bookId)
+    .then(book => {
+     return req.user.addToCart(book);
     })
     .then(result => {
       console.log(result);
@@ -184,10 +187,10 @@ exports.postCart = (req,res,next) =>{
     });
 };
 
-exports.postCartDeleteProduct = (req, res, next)=>{
-  const prodId = req.body.productId;
+exports.postCartDeleteBook = (req, res, next)=>{
+  const bookId = req.body.bookId;
   req.user
-  .removeFromCart(prodId)
+  .removeFromCart(bookId)
   .then(result => {
     res.redirect('/cart');
   })
@@ -200,33 +203,33 @@ exports.postCartDeleteProduct = (req, res, next)=>{
 };
 
 exports.getCheckout = (req, res, next) => {
-  let products;
+  let books;
   let total = 0;
   // console.log('get checkout');
   req.user
-  .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
+  .populate('cart.items.bookId') //we already have items array in cart, here we are populating products with all the info available.. 
   .then(user => {
-      products = user.cart.items;
+      books = user.cart.items;
       total = 0;
-      products.forEach(p => {
-        total += p.quantity * p.productId.price;
-        console.log(p.productId);
+      books.forEach(b => {
+        total += b.quantity * b.bookId.price;
+        console.log(b.bookId);
       });
       return stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ['card'],
-        line_items: products.map(p =>{
+        line_items: books.map(b =>{
           return {
             price_data: {
               product_data: {
                 // product: p.productId._id,
-                name: p.productId.title,
-                description: p.productId.description,
+                name: b.bookId.title,
+                description: b.bookId.description,
               },
-              unit_amount: p.productId.price * 100,
+              unit_amount: b.bookId.price * 100,
               currency: 'inr',
             } ,
-            quantity: p.quantity
+            quantity: b.quantity
           };
         }),
         success_url: req.protocol + '://' + req.get('host') + '/checkout/success',
@@ -237,7 +240,7 @@ exports.getCheckout = (req, res, next) => {
     res.render('shop/checkout', {
       pageTitle: 'Checkout',
       path: '/checkout',
-      products: products,
+      books: books,
       totalSum: total,
       sessionId: session.id
     });
@@ -252,17 +255,17 @@ exports.getCheckout = (req, res, next) => {
 
 exports.getCheckoutSuccess = (req, res, next) => {
   req.user
-  .populate('cart.items.productId') //we already have items array in cart, here we are populating products with all the info available.. 
+  .populate('cart.items.bookId') //we already have items array in cart, here we are populating products with all the info available.. 
   .then(user => {
-      const products = user.cart.items.map(i => {
-        return {quantity: i.quantity, productData: {...i.productId._doc}};
+      const books = user.cart.items.map(i => {
+        return {quantity: i.quantity, bookData: {...i.bookId._doc}};
       });
   const order = new Order({
     user: {
       email: req.user.email,
       userId: req.user
     },
-   products: products
+   books: books
   });
   return order.save();
 })
@@ -325,17 +328,17 @@ exports.getInvoice = (req, res, next) => {
    
    let totalPrice = 0;
 
-   order.products.forEach(prod => {
-    totalPrice += prod.quantity * prod.productData.price;
+   order.books.forEach(book => {
+    totalPrice += book.quantity * book.bookData.price;
     pdfDoc
     .fontSize(14)
     .text(
-      prod.productData.title +
+      book.bookData.title +
       ' -' +
-       prod.quantity +
+      book.quantity +
       ' x ' +
        ' Rs.' +
-      prod.productData.price);
+      book.bookData.price);
    });
 
    pdfDoc.text('---------------------------');
@@ -356,13 +359,5 @@ exports.getInvoice = (req, res, next) => {
     // res.contentType("application/pdf");
     // res.setHeader('Content-Disposition','inline; filename = "'+ invoiceName +'"');
     // file.pipe(res);
-  })
-  .catch(err => next(err));
-};
-
-// exports.getCheckout = (req,res,next)=>{
-//   res.render('shop/checkout',{
-//     path: '/checkout',
-//     pageTitile: 'Checkout'
-//   });
-// }
+  }).catch(err => next(err));
+}

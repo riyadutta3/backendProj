@@ -1,13 +1,13 @@
 <div class="backdrop"></div>
 <header class="main-header">
-    <button id="side-menu-toggle">Menu</button>
     <nav class="main-header__nav">
+        <button id="side-menu-toggle">Menu</button>
         <ul class="main-header__item-list">
            <!-- <li class="main-header__item">
             <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
             </li> -->
             <li class="main-header__item">
-            <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Books</a>
+            <a class="<%= path === '/books' ? 'active' : '' %>" href="/books">Books</a>
             </li>
             <li class="main-header__item">
                 <a class="<%= path === '/fiction' ? 'active' : '' %>" href="/fiction">Fiction</a>
@@ -23,11 +23,11 @@
                     <a class="<%= path === '/orders' ? 'active' : '' %>" href="/orders">Orders</a>
                 </li>
                 <li class="main-header__item">
-                    <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Books
+                    <a class="<%= path === '/admin/add-book' ? 'active' : '' %>" href="/admin/add-book">Add Books
                     </a>
                 </li>
                 <li class="main-header__item">
-                    <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Books
+                    <a class="<%= path === '/admin/books' ? 'active' : '' %>" href="/admin/books">Admin Books
                     </a>
                 </li>
             <% } %>
@@ -54,11 +54,17 @@
 
 <nav class="mobile-nav">
     <ul class="mobile-nav__item-list">
-        <li class="mobile-nav__item">
+        <!-- <li class="mobile-nav__item">
             <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
-        </li>
+        </li> -->
         <li class="mobile-nav__item">
-            <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Products</a>
+            <a class="<%= path === '/books' ? 'active' : '' %>" href="/books">Books</a>
+        </li>
+        <li class="main-header__item">
+            <a class="<%= path === '/fiction' ? 'active' : '' %>" href="/fiction">Fiction</a>
+        </li>
+        <li class="main-header__item">
+            <a class="<%= path === '/nonfiction' ? 'active' : '' %>" href="/nonfiction">Non-Fiction</a>
         </li>
         <% if (isAuthenticated) { %>
             <li class="mobile-nav__item">
@@ -68,11 +74,11 @@
                 <a class="<%= path === '/orders' ? 'active' : '' %>" href="/orders">Orders</a>
             </li>
             <li class="mobile-nav__item">
-                <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
+                <a class="<%= path === '/admin/add-book' ? 'active' : '' %>" href="/admin/add-book">Add Book
                 </a>
             </li>
             <li class="mobile-nav__item">
-                <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Products
+                <a class="<%= path === '/admin/books' ? 'active' : '' %>" href="/books">Admin Books
                 </a>
             </li>
         <% } %>

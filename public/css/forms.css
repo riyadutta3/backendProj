@@ -4,10 +4,16 @@
   
   .form-control label,
   .form-control input,
-  .form-control textarea {
+  .form-control textarea,
+  .form-control select {
     display: block;
     width: 100%;
     margin-bottom: 0.25rem;
+  }
+
+  .form-control select{
+    font-size: 17px;
+    padding:  3px;
   }
   
   .form-control input,

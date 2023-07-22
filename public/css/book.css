@@ -1,28 +1,28 @@
-.product-form {
+.book-form {
     width: 20rem;
     max-width: 90%;
     margin: auto;
     display: block;
 }
 
-.product-item {
+.book-item {
     width: 20rem;
     max-width: 95%;
     margin: 1rem;
 }
 
-.product__title {
+.book__title {
     font-size: 1.2rem;
     text-align: center;
 }
 
-.product__price {
+.book__price {
     text-align: center;
     color: #4d4d4d;
     margin-bottom: 0.5rem;
 }
 
-.product__description {
+.book__description {
     text-align: center;
 }
 

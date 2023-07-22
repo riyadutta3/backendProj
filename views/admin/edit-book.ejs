@@ -1,6 +1,6 @@
 <%- include('../includes/head.ejs') %>
     <link rel="stylesheet" href="/css/forms.css">
-    <link rel="stylesheet" href="/css/product.css">
+    <link rel="stylesheet" href="/css/book.css">
 </head>
 <body>
     <%- include('../includes/navigation.ejs') %>
@@ -9,7 +9,7 @@
         <% if(errorMessage) { %>
             <div class="user-message user-message--error"><%= errorMessage %></div>
             <% } %>
-       <form class="product-form" action="/admin/<% if(editing) {%>edit-product<%} else {%>add-product<%} %>" method="post" enctype="multipart/form-data" >
+       <form class="book-form" action="/admin/<% if(editing) {%>edit-book<%} else {%>add-book<%} %>" method="post" enctype="multipart/form-data" >
         <div class="form-control">
             <label for="title">Title</label>
             <input 
@@ -17,7 +17,7 @@
                 type="text" 
                 name="title" 
                 id="title" 
-                value="<% if(editing || hasError) { %><%= product.title %><% } %>">
+                value="<% if(editing || hasError) { %><%= book.title %><% } %>">
         </div>
         <!-- <div class="form-control">
             <label for="imageUrl">Image Url</label>
@@ -40,13 +40,7 @@
             <select name="genre" id="genre">
                 <option value="Fiction">Fiction</option>
                 <option value="Non-Fiction">Non-Fiction</option>
-              </select>
-            <!-- <input 
-                class="<%= validationErrors.find(e => e.param === 'genre') ? 'invalid' :  '' %>"
-                type="text" 
-                name="genre" 
-                id="genre" 
-                value="<% if(editing || hasError) { %><%= product.genre %><% } %>"> -->
+            </select>
         </div>
         <div class="form-control">
             <label for="price">Price</label>
@@ -56,7 +50,7 @@
                 name="price" 
                 id="price" 
                 step="0.01" 
-                value="<% if(editing || hasError) { %><%= product.price %><% } %>">
+                value="<% if(editing || hasError) { %><%= book.price %><% } %>">
         </div>
         <div class="form-control">
             <label for="description">Description</label>
@@ -64,13 +58,13 @@
                 class="<%= validationErrors.find(e => e.param === 'description') ? 'invalid' :  '' %>"
                 name="description" 
                 id="description" 
-                rows="5"><% if(editing || hasError) { %><%= product.description %><% } %></textarea>
+                rows="5"><% if(editing || hasError) { %><%= book.description %><% } %></textarea>
         </div>
         <% if(editing) { %>
-            <input type="hidden" value="<%= product._id %>" name="productId">
+            <input type="hidden" value="<%= book._id %>" name="bookId">
         <% } %>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn" type="submit"><% if(editing){ %>Update Product <% } else { %> Add Product <% } %></button>
+        <button class="btn" type="submit"><% if(editing){ %>Update Book <% } else { %> Add Book <% } %></button>
        </form>
     </main>
 <%- include('../includes/end.ejs') %>
