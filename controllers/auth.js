@@ -103,7 +103,7 @@ exports.postLogin = (req, res, next) => {
           req.session.user = user;
           return req.session.save(err => {
           console.log(err);
-          res.redirect('/');
+          res.redirect('/books');
           });
         }
         return res.status(422).render('auth/login', {
@@ -172,7 +172,7 @@ exports.postSignup = (req, res, next) => {
 exports.postLogout = (req, res, next) => {
   req.session.destroy(err => {
     console.log(err);
-    res.redirect('/');
+    res.redirect('/login');
   });
 };
 
