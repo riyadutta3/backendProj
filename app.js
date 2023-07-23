@@ -2,7 +2,6 @@
 //to start server use : npm start
 
 const path = require('path');
-const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -12,9 +11,6 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require("csurf");
 const flash = require('connect-flash');
 const multer = require('multer');
-const helmet = require('helmet');
-const compression = require('compression');
-const morgan = require('morgan');
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -52,11 +48,6 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
-const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'});
-
-app.use(helmet());
-app.use(compression());
-app.use(morgan('combined', {stream: accessLogStream}));
 
 app.use(bodyParser.urlencoded({extended: false})); //will extract data as text..
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
